@@ -1,0 +1,22 @@
+name: Weekly Health Summary
+
+# CANONICAL CALLER PATTERN — copy this whole file into a new company
+# scraper repo unchanged. Do NOT copy health-summary-reusable.yml itself;
+# that stays in this template repo and is referenced by tag (@v1) below, so
+# a fix here reaches every scraper on its next run instead of being
+# hand-applied N times.
+
+on:
+  schedule:
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+
+jobs:
+  summary:
+    uses: peviitor-scrapers/Brewtality-3-16/.github/workflows/health-summary-reusable.yml@v1
+    # NOTE: this path is the template repo's ROOT .github/workflows/ folder,
+    # not scraper-py/.github/workflows/ — GitHub only resolves `uses:`
+    # references from a repo's root workflows directory.
+    permissions:
+      issues: write
+      actions: read

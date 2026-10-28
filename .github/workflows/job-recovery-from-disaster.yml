@@ -1,0 +1,168 @@
+name: Recovery from DISASTER
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Check only without making changes'
+        required: true
+        default: 'true'
+
+jobs:
+  restore-company-core:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Restore company in company core
+        run: |
+          set -e
+
+          CIF=$(printf '%08d' "$(jq -r '.id' config/company.json)")
+          LEGAL_NAME=$(jq -r '.company' config/company.json)
+          BRAND=$(jq -r '.brand' config/company.json)
+          WEBSITE=$(jq -r '.website[0]' config/company.json)
+          CAREER=$(jq -r '.career[0]' config/company.json)
+          DEFAULT_LOC=$(jq -r '.location[0]' config/company.json)
+          SCRAPER_FILE=$(jq -r '.scraperFile' config/company.json)
+          TODAY=$(date -u +%Y-%m-%d)
+
+          echo "=== Target state ==="
+          echo "CIF:       $CIF"
+          echo "Company:   $LEGAL_NAME"
+          echo "Brand:     $BRAND"
+          echo "Website:   $WEBSITE"
+          echo "Career:    $CAREER"
+          echo "Location:  $DEFAULT_LOC"
+          echo "Scraper:   $SCRAPER_FILE"
+          echo "Date:      $TODAY"
+
+          BEFORE=$(curl -s \
+            "https://api.peviitor.ro/v1/firme/company/?cif=${CIF}")
+          echo ""
+          echo "=== Current state ==="
+          echo "$BEFORE" | jq '.data[0] // {total: 0}'
+
+          if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+            echo ""
+            echo "DRY RUN — exiting without changes"
+            exit 0
+          fi
+
+          echo ""
+          echo "=== Upserting fresh entry ==="
+          jq -n \
+            --arg id "$CIF" \
+            --arg company "$LEGAL_NAME" \
+            --arg brand "$BRAND" \
+            --arg website "$WEBSITE" \
+            --arg career "$CAREER" \
+            --arg loc "$DEFAULT_LOC" \
+            --arg today "$TODAY" \
+            --arg scraperFile "$SCRAPER_FILE" \
+            '{id:$id,company:$company,brand:$brand,status:"activ",location:[$loc],website:[$website],career:[$career],lastScraped:$today,scraperFile:$scraperFile}' \
+            > company_data.json
+
+          echo "Inserting:"
+          cat company_data.json | jq .
+
+          curl -s -X PUT \
+            "https://api.peviitor.ro/v1/firme/company/add/" \
+            -H "Content-Type: application/json" \
+            --data-binary @company_data.json
+
+          echo ""
+          echo "=== Verification ==="
+          AFTER=$(curl -s \
+            "https://api.peviitor.ro/v1/firme/company/?cif=${CIF}")
+
+          VERIFIED=true
+
+          check_field() {
+            local label="$1" expected="$2" actual="$3"
+            if [ "$actual" = "null" ] || [ "$actual" = "" ]; then
+              echo "X $label: MISSING (expected: $expected)"
+              VERIFIED=false
+            elif [ "$actual" != "$expected" ]; then
+              echo "X $label: expected '$expected', got '$actual'"
+              VERIFIED=false
+            else
+              echo "OK $label: $actual"
+            fi
+          }
+
+          check_array() {
+            local label="$1" actual="$2"
+            local type=$(echo "$actual" | jq -r 'type')
+            if [ "$type" != "array" ]; then
+              echo "X $label: not an array (type: $type)"
+              VERIFIED=false
+            else
+              local len=$(echo "$actual" | jq 'length')
+              echo "OK $label: array ($len items)"
+            fi
+          }
+
+          check_url() {
+            local label="$1" val="$2"
+            if [[ ! "$val" =~ ^https?:// ]]; then
+              echo "X $label: not a valid URL: $val"
+              VERIFIED=false
+            else
+              echo "OK $label: $val"
+            fi
+          }
+
+          check_date() {
+            local label="$1" val="$2"
+            if [[ ! "$val" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+              echo "X $label: not YYYY-MM-DD: $val"
+              VERIFIED=false
+            else
+              echo "OK $label: $val"
+            fi
+          }
+
+          D=$(echo "$AFTER" | jq '.data[0]')
+          echo ""
+          echo "--- Field checks ---"
+          check_field "CIF"        "$CIF"         "$(echo "$D" | jq -r '.id')"
+          check_field "Company"    "$LEGAL_NAME"  "$(echo "$D" | jq -r '.company')"
+          check_field "Brand"      "$BRAND"       "$(echo "$D" | jq -r '.brand')"
+          check_field "Status"     "activ"        "$(echo "$D" | jq -r '.status')"
+          check_array "Location"   "$(echo "$D" | jq '.location')"
+          check_array "Website"    "$(echo "$D" | jq '.website')"
+          check_array "Career"     "$(echo "$D" | jq '.career')"
+          check_field "scraperFile" "$SCRAPER_FILE" "$(echo "$D" | jq -r '.scraperFile')"
+
+          WEB_URL=$(echo "$D" | jq -r '.website[0] // ""')
+          CAREER_URL=$(echo "$D" | jq -r '.career[0] // ""')
+          LAST_DATE=$(echo "$D" | jq -r '.lastScraped // ""')
+          [ -n "$WEB_URL" ]   && check_url  "Website[0]"   "$WEB_URL"
+          [ -n "$CAREER_URL" ] && check_url  "Career[0]"    "$CAREER_URL"
+          [ -n "$LAST_DATE" ]  && check_date "lastScraped"  "$LAST_DATE"
+
+          echo ""
+          if [ "$VERIFIED" = true ]; then
+            echo "RECOVERY COMPLETE — ALL FIELDS VERIFIED"
+          else
+            echo "RECOVERY FAILED — VERIFICATION ERRORS"
+            exit 1
+          fi
+
+      - name: Run Integration Tests
+        if: github.event.inputs.dry_run != 'true'
+        run: pytest tests/integration -q
+
+      - name: Run E2E Tests
+        if: github.event.inputs.dry_run != 'true'
+        run: pytest tests/e2e -q

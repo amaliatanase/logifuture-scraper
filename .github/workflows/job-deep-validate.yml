@@ -1,0 +1,26 @@
+name: Deep Validate Jobs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deep-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -e .
+
+      - name: Read CIF from config
+        id: cif
+        run: echo "cif=$(python -c 'import json; print(json.load(open("config/company.json"))["id"])')" >> "$GITHUB_OUTPUT"
+
+      - name: Deep validate (content mode — GET + body scan, catches soft-404s)
+        run: python -m scraper.validate_jobs ${{ steps.cif.outputs.cif }} --delete

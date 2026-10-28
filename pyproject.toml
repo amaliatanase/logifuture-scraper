@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "logifuture-scraper"
+version = "0.4.0"
+description = "Self-healing job scraper skeleton for peviitor.ro (Python counterpart of the *-nodejs-scraper template)"
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.31",
+    "beautifulsoup4>=4.12",
+    "lxml>=5.0",
+    "playwright>=1.40",
+]
+
+[project.optional-dependencies]
+# Optional adaptive-selector layer. See ai/SELF-HEALING.md.
+adaptive = ["scrapling>=0.2"]
+# Optional headless-browser job validation. See scraper/job_validator.py.
+browser = ["playwright>=1.40"]
+dev = ["pytest>=8.0", "requests-mock>=1.11", "playwright>=1.40"]
+
+[tool.setuptools]
+packages = ["scraper"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
+markers = ["browser: drives a real Chromium via Playwright (skipped when browsers are not installed)"]

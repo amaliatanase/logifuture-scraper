@@ -1,0 +1,35 @@
+name: Scrape
+
+# CANONICAL CALLER PATTERN — copy this whole file into a new company
+# scraper repo unchanged. Do NOT copy scrape-reusable.yml itself; that stays
+# in this template repo and is referenced by tag (@v1) below, so a fix here
+# reaches every scraper on its next run instead of being hand-applied N times.
+#
+# Bump the @v1 tag in every caller (a find/replace across repos) only when
+# you deliberately want to move everyone to a new template version.
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run without writing to the API'
+        type: boolean
+        default: true
+
+jobs:
+  scrape:
+    uses: peviitor-scrapers/Brewtality-3-16/.github/workflows/scrape-reusable.yml@v1
+    # NOTE: this path is the template repo's ROOT .github/workflows/ folder,
+    # not scraper-py/.github/workflows/ — GitHub only resolves `uses:`
+    # references from a repo's root workflows directory.
+    with:
+      # Computed once, here, instead of inside the reusable workflow: a
+      # `schedule` run has no `inputs` context, so `github.event.inputs.dry_run`
+      # is "" there. Gating on event_name first is what stops a cron run from
+      # silently taking the dry-run branch forever.
+      dry_run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
+    permissions:
+      contents: write
+      issues: write

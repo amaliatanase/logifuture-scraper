@@ -1,0 +1,10 @@
+{
+  "id": "49014718",
+  "company": "LOGIFUTURE",
+  "brand": "Logifuture",
+  "status": "activ",
+  "location": ["Bucuresti"],
+  "website": ["https://logifuture.com"],
+  "career": ["https://apply.workable.com/logifuture/"],
+  "scraperFile": "https://github.com/amaliatanase/logifuture-scraper/actions/workflows/scrape.yml"
+}
