@@ -1,11 +1,17 @@
 {
   "id": "49014718",
-  "company": "LOGIFUTURE",
+  "company": "LOGIFUTURE S.R.L.",
   "brand": "Logifuture",
   "status": "activ",
-  "location": ["Bucuresti"],
-  "website": ["https://logifuture.com"],
-  "career": ["https://apply.workable.com/logifuture/"],
+  "location": [
+    "Bucuresti"
+  ],
+  "website": [
+    "https://logifuture.com"
+  ],
+  "career": [
+    "https://apply.workable.com/logifuture/"
+  ],
   "scraperFile": "https://github.com/amaliatanase/logifuture-scraper/actions/workflows/scrape.yml",
-  "ownJobUrlPrefix": "https://logifuture.com/jobs/"
+  "ownJobUrlPrefix": "https://apply.workable.com/j/"
 }

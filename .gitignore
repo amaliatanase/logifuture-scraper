@@ -11,3 +11,4 @@ jobs.json
 company_data.json
 .coverage
 htmlcov/
+.DS_Store

@@ -7,6 +7,7 @@ cascade in ``scraper.self_healing`` driven by ``config/scraper.json``
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 import unicodedata
@@ -32,6 +33,7 @@ _HN_RX = re.compile(r"<h[1-4][^>]*>(.*?)</h[1-4]>", re.I | re.S)
 _A_RX = re.compile(r"<a\b[^>]*>(.*?)</a>", re.I | re.S)
 _DMY_RX = re.compile(r"(\d{2})\.(\d{2})\.(\d{4})")
 _ISO_RX = re.compile(r"\d{4}-\d{2}-\d{2}(?:[T ][\d:.]+Z?)?")
+_RO_COUNTRY_RX = re.compile(r"^(ro|romania|rom[aâ]nia)$", re.IGNORECASE)
 
 
 def slugify(text: str) -> str:
@@ -159,33 +161,63 @@ def _clean_title(raw: str | None) -> str | None:
     return text or None
 
 
+def _parse_workable_json(data: dict) -> list[dict]:
+    """Extract Romanian jobs from Workable widget payload."""
+    items: list[dict] = []
+    seen: set[str] = set()
+
+    for job in data.get("jobs", []):
+        locs = job.get("locations") if isinstance(job.get("locations"), list) else []
+        ro_locs = [
+            l for l in locs
+            if _RO_COUNTRY_RX.search(str(l.get("countryCode") or l.get("country") or ""))
+        ]
+        country = str(job.get("country") or "").strip()
+        is_ro = bool(_RO_COUNTRY_RX.search(country)) or len(ro_locs) > 0
+        if not is_ro:
+            continue
+
+        title = _clean_title(job.get("title"))
+        url = job.get("url") or job.get("shortlink") or (
+            f"https://apply.workable.com/j/{job.get('shortcode')}" if job.get("shortcode") else None
+        )
+        if not title or not url:
+            continue
+
+        key = f"{title.lower()}|{url}"
+        if key in seen:
+            continue
+        seen.add(key)
+
+        items.append({
+            "title": title,
+            "url": url,
+            "expirationdate": parse_deadline(job.get("published_on")),
+        })
+
+    return items
+
+
 def parse_listing(html: str, selectors: dict | None = None) -> list[dict]:
-    """Parse the open-positions page into ``{title, expirationdate, url}``
-    items, self-healing through the selector cascade (default:
-    ``config/scraper.json``; tests pass ``selectors`` explicitly):
+    """Parse the open-positions page into ``{title, expirationdate, url}`` items."""
+    # 1. Direct JSON from Workable widget API
+    raw = html.strip() if isinstance(html, str) else ""
+    if raw.startswith("{") and '"jobs"' in raw:
+        try:
+            data = json.loads(raw)
+            if isinstance(data, dict) and "jobs" in data:
+                items = _parse_workable_json(data)
+                if items:
+                    log.info("parse_listing: %d items via Workable JSON API", len(items))
+                    return items
+        except Exception as exc:
+            log.warning("Workable JSON parse error: %s", exc)
 
-        article blocks:  CSS list -> JSON-LD JobPosting -> regex <article>
-        title:           CSS list -> Scrapling (optional) -> regex <hN>/<a>
-        deadline:        CSS list -> date regex over the whole block text
-        url:             first real <a href> in the block (may be relative;
-                          the caller resolves it against the listing page)
-
-    ``url`` is ``None`` when the block has no anchor at all -- the caller
-    then falls back to a sitemap match or a title-slug guess. Prefer this
-    scraped ``url`` whenever present: guessing a permalink from the title
-    alone breaks on any site whose real URL needs an ID the title can't
-    reproduce (see ai/JOB_MODEL.md history -- this is what silently sent
-    404ing URLs to peviitor before this field existed).
-    """
+    # 2. Self-healing cascade for standard HTML (and unit test fixtures)
     sel = selectors if selectors is not None else _SEL
     articles = locate_articles(html, sel["jobArticle"])
     items: list[dict] = []
     strategies: set[str] = set()
-    # Dedup key is title+URL, not title alone: a broad fallback selector can
-    # match the same block twice (same title AND same URL), but a site is
-    # free to post one title open in several locations, each with its own
-    # permalink (e.g. "Mecatronist" at both /sighisoara/ and /sovata/) -- that
-    # is two real postings, not a selector artifact, and must not be dropped.
     seen: set[str] = set()
 
     def _dedupe_key(title: str, url) -> str:
@@ -235,6 +267,25 @@ def parse_listing(html: str, selectors: dict | None = None) -> list[dict]:
 
         items.append({"title": title, "expirationdate": deadline, "url": url})
 
-    tag = f" [{', '.join(sorted(strategies))}]" if strategies else ""
-    log.info("parse_listing: %d items via %s%s", len(items), articles.mode, tag)
-    return items
+    if items:
+        tag = f" [{', '.join(sorted(strategies))}]" if strategies else ""
+        log.info("parse_listing: %d items via %s%s", len(items), articles.mode, tag)
+        return items
+
+    # 3. Fallback when html is a client-rendered shell (e.g. Workable careers HTML)
+    # Only triggered in production runs (selectors is None)
+    if selectors is None and ("workable" in str(scraper.get("sources", {}).get("listing", "")).lower() or "workable" in raw.lower()):
+        try:
+            from . import fetch
+            api_url = "https://apply.workable.com/api/v1/widget/accounts/logifuture?details=true"
+            resp = fetch.get(api_url, label="workable widget")
+            if resp.ok and resp.text.strip().startswith("{"):
+                data = json.loads(resp.text)
+                items = _parse_workable_json(data)
+                if items:
+                    log.info("parse_listing: %d items via Workable widget fallback", len(items))
+                    return items
+        except Exception as exc:
+            log.warning("Workable widget fetch fallback error: %s", exc)
+
+    return []

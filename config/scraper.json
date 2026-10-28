@@ -13,11 +13,11 @@
   "manageCompany": true,
   "defaultLocation": ["Bucuresti"],
   "defaultWorkmode": "on-site",
-  "ownJobUrlPrefix": "https://logifuture.com/jobs/",
+  "ownJobUrlPrefix": "https://apply.workable.com/j/",
   "sources": {
     "sitemap": "",
     "listing": "https://apply.workable.com/logifuture/",
-    "jobArchive": "https://logifuture.com/jobs/"
+    "jobArchive": "https://apply.workable.com/j/"
   },
   "selectors": {
     "jobArticle": ["", "[class*='job']", ".vacancy, .position, .listing-item"],

@@ -1,0 +1,82 @@
+{
+  "validatedAt": "2026-10-28T19:51:05.492187+00:00",
+  "source": "ANAF",
+  "brand": "Logifuture",
+  "anaf": {
+    "cui": 49014718,
+    "name": "LOGIFUTURE S.R.L.",
+    "address": "MUNICIPIUL BUCUREŞTI, SECTOR 3, STR MATEI BASARAB, NR.13-15, ET.6",
+    "registrationNumber": "J2023020246409",
+    "phone": "",
+    "fax": "",
+    "postalCode": "",
+    "caenCode": "6210",
+    "iban": "",
+    "registrationState": "TRANSFER(SOSIRE) din data 06.06.2024",
+    "registrationDate": "2023-10-26",
+    "fiscalAuthority": "Administraţia Sector 3 a Finanţelor Publice",
+    "ownershipForm": "PROPR.PRIVATA-CAPITAL PRIVAT STRAIN",
+    "organizationForm": "PERSOANA JURIDICA",
+    "legalForm": "SOCIETATE COMERCIALĂ CU RĂSPUNDERE LIMITATĂ",
+    "vatRegistered": true,
+    "vatPeriods": [
+      {
+        "start": "2023-12-21",
+        "end": null,
+        "yearStart": "",
+        "message": ""
+      }
+    ],
+    "cashBasisVat": false,
+    "cashBasisVatStart": null,
+    "cashBasisVatEnd": null,
+    "inactive": false,
+    "inactiveSince": null,
+    "reactivatedSince": null,
+    "splitVat": false,
+    "eFacturaRegistered": false,
+    "headquartersAddress": {
+      "street": "Str. Matei Basarab",
+      "number": "13-15",
+      "locality": "Sector 3 Mun. Bucureşti",
+      "county": "MUNICIPIUL BUCUREŞTI",
+      "country": "",
+      "postalCode": ""
+    },
+    "fiscalAddress": {
+      "street": "",
+      "number": "",
+      "locality": "",
+      "county": "",
+      "country": "",
+      "postalCode": ""
+    },
+    "administrators": [],
+    "authorizedCaenCodes": [],
+    "onrcStatus": 0,
+    "onrcStatusLabel": "Funcțiune"
+  },
+  "peviitor": {
+    "id": "49014718",
+    "company": "LOGIFUTURE S.R.L.",
+    "brand": "LOGIFUTURE",
+    "status": "activ",
+    "location": [
+      "Romania"
+    ],
+    "website": [
+      "https://www.logifuture.com"
+    ],
+    "lastScraped": "2026-08-15",
+    "scraperFile": "inviitor-ro-nodejs-scraper",
+    "_version_": 1873578658768093184,
+    "_root_": "49014718"
+  },
+  "summary": {
+    "company": "LOGIFUTURE S.R.L.",
+    "cif": "49014718",
+    "active": true,
+    "inactiveSince": null,
+    "address": "MUNICIPIUL BUCUREŞTI, SECTOR 3, STR MATEI BASARAB, NR.13-15, ET.6"
+  }
+}
