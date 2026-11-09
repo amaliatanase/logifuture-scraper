@@ -10,11 +10,11 @@
 | Location | MUNICIPIUL BUCUREŞTI, SECTOR 3, STR MATEI BASARAB, NR.13-15, ET.6 |
 | Website | [https://logifuture.com](https://logifuture.com) |
 | Careers | [https://apply.workable.com/logifuture/](https://apply.workable.com/logifuture/) |
-| Last Scraped | 2026-11-08 |
+| Last Scraped | 2026-11-09 |
 
 ## Current Job Listings (4)
 
-_Generated: 2026-11-08T12:16:52.525451+00:00_
+_Generated: 2026-11-09T14:27:12.798607+00:00_
 
 ### APM Specialist
 
