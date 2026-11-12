@@ -1,5 +1,5 @@
 {
-  "validatedAt": "2026-11-11T13:00:22.899500+00:00",
+  "validatedAt": "2026-11-12T14:02:33.475992+00:00",
   "source": "ANAF",
   "brand": "Logifuture",
   "anaf": {
@@ -70,9 +70,9 @@
     "career": [
       "https://apply.workable.com/logifuture/"
     ],
-    "lastScraped": "2026-11-10",
+    "lastScraped": "2026-11-11",
     "scraperFile": "https://github.com/amaliatanase/logifuture-scraper/actions/workflows/scrape.yml",
-    "_version_": 1881479387977613312,
+    "_version_": 1881566895727968256,
     "_root_": "49014718"
   },
   "summary": {
