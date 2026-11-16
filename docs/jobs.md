@@ -10,18 +10,11 @@
 | Location | MUNICIPIUL BUCUREŞTI, SECTOR 3, STR MATEI BASARAB, NR.13-15, ET.6 |
 | Website | [https://logifuture.com](https://logifuture.com) |
 | Careers | [https://apply.workable.com/logifuture/](https://apply.workable.com/logifuture/) |
-| Last Scraped | 2026-11-15 |
+| Last Scraped | 2026-11-16 |
 
-## Current Job Listings (4)
+## Current Job Listings (3)
 
-_Generated: 2026-11-15T13:00:06.852249+00:00_
-
-### APM Specialist
-
-- **URL:** [https://apply.workable.com/j/3D12629B24](https://apply.workable.com/j/3D12629B24)
-- **Work Mode:** on-site
-- **Location:** Bucuresti
-- **Status:** scraped
+_Generated: 2026-11-16T14:04:07.471182+00:00_
 
 ### Senior .Net Framework Back End Developer
 
