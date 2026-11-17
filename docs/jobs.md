@@ -10,11 +10,11 @@
 | Location | MUNICIPIUL BUCUREŞTI, SECTOR 3, STR MATEI BASARAB, NR.13-15, ET.6 |
 | Website | [https://logifuture.com](https://logifuture.com) |
 | Careers | [https://apply.workable.com/logifuture/](https://apply.workable.com/logifuture/) |
-| Last Scraped | 2026-11-16 |
+| Last Scraped | 2026-11-17 |
 
 ## Current Job Listings (3)
 
-_Generated: 2026-11-16T14:04:07.471182+00:00_
+_Generated: 2026-11-17T14:58:07.001826+00:00_
 
 ### Senior .Net Framework Back End Developer
 
